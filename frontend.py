@@ -1,25 +1,41 @@
 import streamlit as st
-from llm import generate_narrative
+from llm import generate_description
 from image_generator import generate_image
-from vector_db import store_prompt
 
-st.title("🏨 Multimodal Hospitality Creator")
+st.set_page_config(
+    page_title="Multimodal Hospitality Creator",
+    layout="wide"
+)
 
-user_prompt = st.text_input("Enter Hospitality Concept:")
+st.title("🏨 Multimodal Hospitality Concept Creator")
+
+prompt = st.text_input(
+    "Enter your hospitality concept:",
+    "Luxury beachfront eco-resort in Bali"
+)
 
 if st.button("Generate Concept"):
 
-    if user_prompt:
-        store_prompt(user_prompt)
+    # Generate description
+    with st.spinner("Generating description..."):
+        description = generate_description(prompt)
 
-        st.write("### Generated Narrative")
-        text_output = generate_narrative(user_prompt)
-        st.write(text_output)
+    # Generate image bytes
+    with st.spinner("Generating image..."):
+        image_bytes = generate_image(prompt)
 
-        st.write("### Generated Image")
-        image_path = generate_image(user_prompt)
+    col1, col2 = st.columns(2)
 
-        if image_path.endswith(".png"):
-            st.image(image_path)
+    # Left Column - Text
+    with col1:
+        st.subheader("Concept Description")
+        st.write(description)
+
+    # Right Column - Image
+    with col2:
+        st.subheader("Visual Representation")
+
+        if image_bytes:
+            st.image(image_bytes, width=500)
         else:
-            st.write(image_path)
+            st.error("Image generation failed. Please try again.")
